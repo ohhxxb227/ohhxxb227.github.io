@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天吃什么 - 终极选择困难症解决方案</title>
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        /* 背景图设置 */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 背景图容器 */
+        .background-container {
+            position: fixed;
+            top: 0%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: url('素材.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* 半透明遮罩层 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2); /* 调整透明度：0.8=80%白 */
+            z-index: -1;
+        }
+
+        /* 页头样式 */
+        header {
+            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            color: #ff9966;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 主内容区 */
+        .container {
+            flex: 1;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* 结果展示区 */
+        #result {
+            font-size: 3em;
+            margin: 40px 0;
+            min-height: 80px;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 主要按钮 */
+        .button {
+            background: #ff9966;
+            color: white;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255,153,102,0.3);
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255,153,102,0.4);
+        }
+
+        .button:active {
+            transform: scale(0.95);
+        }
+
+        /* 分类选项 */
+        .options {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 2px solid #ff9966;
+            background: white;
+            color: #ff9966;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-btn.active {
+            background: #ff9966;
+            color: white;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(51, 51, 51, 0.9);
+            color: white;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            #result {
+                font-size: 2em;
+            }
+            
+            .button {
+                width: 100%;
+                padding: 15px;
+            }
+
+            .container {
+                margin: 20px auto;
+                padding: 20px;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景图容器 -->
+    <div class="background-container"></div>
+
+    <header>
+        <h1>今天吃什么？</h1>
+    </header>
+
+    <div class="container">
+        <div id="result" class="fade-in"></div>
+        <button class="button" onclick="generateFood()">点我决定！</button>
+        
+        <div class="options">
+            <button class="option-btn active" onclick="toggleCategory('all')">全部</button>
+            <button class="option-btn" onclick="toggleCategory('chinese')">中餐</button>
+            <button class="option-btn" onclick="toggleCategory('western')">西餐</button>
+            <button class="option-btn" onclick="toggleCategory('snack')">小吃</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2023 今天吃什么 建议每天使用100次</p>
+    </footer>
+
+    <script>
+        // 食物数据库（可自由修改）
+        const foodList = {
+            all: [
+                '火锅', '烧烤', '炸鸡', '披萨', '寿司', 
+                '拉面', '汉堡', '沙拉', '牛排', '饺子',
+                '麻辣烫', '盖浇饭', '咖喱饭', '意面', '炒饭'
+            ],
+            chinese: [
+                '火锅', '麻辣烫', '饺子', 
+                '拉面', '盖浇饭', '炒饭'
+            ],
+            western: [
+                '披萨', '汉堡', '沙拉',
+                '牛排', '意面'
+            ],
+            snack: [
+                '炸鸡', '烧烤', '寿司',
+                '咖喱饭'
+            ]
+        };
+
+        let currentCategory = 'all';
+
+        function generateFood() {
+            const foods = foodList[currentCategory];
+            const resultElement = document.getElementById('result');
+            
+            // 清除现有动画类
+            resultElement.classList.remove('fade-in');
+            
+            // 触发重新动画
+            void resultElement.offsetWidth; // 触发重排
+            resultElement.classList.add('fade-in');
+            
+            // 随机选择食物
+            const randomIndex = Math.floor(Math.random() * foods.length);
+            resultElement.textContent = foods[randomIndex];
+        }
+
+        function toggleCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase() === category) {
+                    btn.classList.add('active');
+                }
+            });
+            generateFood();
+        }
+
+        // 初始化时生成一次结果
+        generateFood();
+    </script>
+</body>
+</html>
